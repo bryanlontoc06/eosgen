@@ -21,7 +21,7 @@ git clone <repo-url>
 cd <repo-name>
 
 # Install dependencies
-npm install
+npm install @types/node --save-dev
 ```
 
 ---
@@ -74,9 +74,9 @@ node createNewReleaseBranch.ts release/v1.0.0-rc1 1.0.0-rc1
 ## 📂 File Structure
 ```text
 /
-├── falcon-web-bff/  # 🛠 Microservice directory
-├── falcon-connect-svc/  # 🛠 Microservice directory
-├── falcon-product-svc/  # 🛠 Microservice directory
+├── *******-web-bff/  # 🛠 Microservice directory
+├── *******--connect-svc/  # 🛠 Microservice directory
+├── *******--product-svc/  # 🛠 Microservice directory
 │   ...
 ├── eosgen/  # 📁 EOSGen scripts and configurations
 │   ├── mergetomasterbranch.ts  # 🔄 Script to merge the release branch to master
