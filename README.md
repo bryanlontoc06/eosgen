@@ -91,9 +91,6 @@ node createNewReleaseBranch.ts release/v1.0.0-rc1 1.0.0-rc1
 node_modules/
 ```
 
-## 🤝 Contribution
-Feel free to contribute by submitting pull requests or reporting issues.
-
 ## 📜 License
 MIT License
 
