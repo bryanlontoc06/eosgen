@@ -21,16 +21,20 @@ const readline = require("readline");
 // List of microservices to update
 const microservices = [
   "falcon-web-bff",
-  // "falcon-connect-svc",
-  // "falcon-product-svc",
-  // "falcon-store-svc",
-  // "falcon-order-svc",
-  // "falcon-cart-svc",
-  // "falcon-console-bff",
-  // 'falcon-user-svc'
-  // 'falcon-promo-svc',
-  // 'falcon-discount-svc',
-  // 'falcon-payment-svc'
+  "falcon-app-bff",
+  "falcon-connect-svc",
+  "falcon-product-svc",
+  "falcon-store-svc",
+  "falcon-order-svc",
+  "falcon-payment-svc",
+  "falcon-discount-svc",
+  "falcon-cart-svc",
+  "falcon-notification-svc",
+  "falcon-user-svc",
+  "falcon-webhook-svc",
+  "falcon-jedi-svc",
+  "falcon-promo-svc",
+  "falcon-console-bff",
 ];
 
 // List of files to update in each microservice
@@ -89,14 +93,15 @@ function updateVersion(filePath, newVersion) {
     let content = fs.readFileSync(filePath, "utf8");
 
     if (filePath.includes("task-definition")) {
-      // Update only the container image versions for each microservice
+      // Match and replace any version tag after the service name
       const imageRegex = new RegExp(
-        `("image":\\s*"\\d+\\.dkr\\.ecr\\.ap-southeast-1\\.amazonaws\\.com\\/(${microservices.join(
+        `("image":\\s*"\\d+\\.dkr\\.ecr\\.ap-southeast-1\\.amazonaws\\.com\\/(?:${microservices.join(
           "|"
-        )}):)[\\d\\.]+(")`,
+        )}):)[^"]+(")`,
         "g"
       );
-      content = content.replace(imageRegex, `$1${newVersion}$3`);
+
+      content = content.replace(imageRegex, `$1${newVersion}$2`);
     }
 
     fs.writeFileSync(filePath, content, "utf8");
@@ -140,7 +145,7 @@ function updateVersion(filePath, newVersion) {
     // 5️⃣ Git add and commit
     runCommand(`git add .`, servicePath);
     runCommand(
-      `git commit -m "chore: FAL-755 Bump version to ${version}"`,
+      `git commit -m "chore: FAL-3251 Bump version to ${version}"`,
       servicePath
     );
     // ========================= Commands ========================= //

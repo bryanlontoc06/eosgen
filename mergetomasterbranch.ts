@@ -22,13 +22,20 @@
 
   // List of microservices to update
   const microservices = [
-    // "falcon-web-bff",
-    // "falcon-app-bff",
-    // "falcon-connect-svc",
-    // "falcon-product-svc",
-    // "falcon-store-svc",
-    // "falcon-order-svc",
-    // "falcon-cart-svc",
+    "falcon-web-bff",
+    "falcon-app-bff",
+    "falcon-connect-svc",
+    "falcon-product-svc",
+    "falcon-store-svc",
+    "falcon-order-svc",
+    "falcon-payment-svc",
+    "falcon-discount-svc",
+    "falcon-cart-svc",
+    "falcon-notification-svc",
+    "falcon-user-svc",
+    "falcon-webhook-svc",
+    "falcon-jedi-svc",
+    "falcon-promo-svc",
     "falcon-console-bff",
   ];
 
