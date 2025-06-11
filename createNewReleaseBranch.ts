@@ -1,5 +1,8 @@
-// Usage: node createNewReleaseBranch.ts <new-release-branch (next sprint)> <new version> ["mi", "ck", "gw"]
-// Example: node createNewReleaseBranch.ts release/v1.0.0-rc1 1.0.0-rc1 mi ck gw
+// !! IMPORTANT !!
+// NOTE: THIS SCRIPT IS FOR CREATING A NEW RELEASE BRANCH AND VERSION FOR MULTIPLE MICROSERVICES FROM A MASTER BRANCH
+
+// Usage: node createNewReleaseBranch.ts <newVersion> ["mi", "ck", "gw"]
+// Example: node createNewReleaseBranch.ts 1.0.0-rc1 mi ck gw
 //
 // This script will create new release branch and new version for all microservices.
 // It creates a new branch and new version for each microservice.
@@ -9,9 +12,9 @@
 // The script runs the following Git commands for each microservice:
 // 1. git checkout master
 // 2. git pull origin master
-// 3. git checkout -b <new-release-branch>
-// 4. npm version 1.0.0-rc1 --no-git-tag-version
-// 5. git commit -m "chore: FAL-755 Bump version to 1.0.0-rc1
+// 3. git checkout -b <newVersion>
+// 4. npm version <newVersion> --no-git-tag-version
+// 5. git commit -m "chore: FAL-755 Bump version to <version>"
 
 const { execSync } = require("child_process");
 const fs = require("fs");
@@ -72,13 +75,12 @@ function runCommand(command, cwd) {
 // }
 
 // Get dynamic values from command-line arguments
-const newReleaseBranch = process.argv[2]; // e.g., "release/v1.0.0-rc1"
-const version = process.argv[3]; // e.g., "1.0.0-rc1"
-const brands = process.argv.slice(4); // e.g., ["mi", "ck", "gw"]
+const newVersion = process.argv[2]; // e.g., "1.0.0-rc1"
+const brands = process.argv.slice(3); // e.g., ["mi", "ck", "gw"]
 
-if (!newReleaseBranch || !version || !brands.length) {
+if (!newVersion || !brands.length) {
   console.error(
-    "❌ Usage: node releasebranch.ts <new-release-branch> <version> <brands...>"
+    "❌ Usage: node createNewReleaseBranch.ts <newVersion> <brand/s['mi', 'ck', 'gw']>"
   );
   process.exit(1);
 }
@@ -132,7 +134,7 @@ function updateVersion(filePath, newVersion) {
     runCommand("git pull origin master", servicePath);
 
     // 2️⃣ Create a new release branch
-    runCommand(`git checkout -b ${newReleaseBranch}`, servicePath);
+    runCommand(`git checkout -b release/v${newVersion}`, servicePath);
 
     for (const brand of brands) {
       // 3️⃣ Update the version inside necessary files **before** running npm version
@@ -144,20 +146,20 @@ function updateVersion(filePath, newVersion) {
           `/task-definition/${brand}`,
           file
         );
-        updateVersion(filePath, version);
+        updateVersion(filePath, newVersion);
       }
     }
 
     // 4️⃣ Run npm version **after** updating the version inside files
-    runCommand(`npm version ${version} --no-git-tag-version`, servicePath);
+    runCommand(`npm version ${newVersion} --no-git-tag-version`, servicePath);
 
     // 5️⃣ Git add and commit
     runCommand(`git add .`, servicePath);
     runCommand(
-      `git commit -m "chore: FAL-3253 Bump version to ${version}"`,
+      `git commit -m "chore: FAL-3253 Bump version to ${newVersion}"`,
       servicePath
     );
-    // runCommand(`git push origin release/v${version}`, servicePath);
+    // runCommand(`git push origin release/v${newVersion}`, servicePath);
     // ========================= Commands ========================= //
 
     console.log(`✅ Created New Release Branch completed for ${service}`);

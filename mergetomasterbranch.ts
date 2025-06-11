@@ -1,4 +1,4 @@
-// Usage: node mergetomasterbranch.ts <release-branch(current)> <ticket-id(current sprint chore ticket ID)>
+// Usage: node mergetomasterbranch.ts <currentReleaseBranch> <ticket-id(current sprint chore ticket ID)>
 // Example: node mergetomasterbranch.ts release/v0.0.0 FAL-2014
 //
 // This script rebases the release branch to master for all microservices.
@@ -10,8 +10,8 @@
 // The script runs the following Git commands for each microservice:
 // 1. git checkout master
 // 2. git pull origin master
-// 3. git checkout <release-branch>
-// 4. git pull origin <release-branch>
+// 3. git checkout <currentReleaseBranch>
+// 4. git pull origin <currentReleaseBranch>
 // 5. git checkout -b <chore-branch>
 // 6. git rebase master
 (() => {
@@ -65,12 +65,12 @@
   }
 
   // Get dynamic values from command-line arguments
-  const releaseBranch = process.argv[2]; // e.g., "release/v0.22.0 (current Branch)"
+  const currentReleaseBranch = process.argv[2]; // e.g., "release/v0.22.0 (current Branch)"
   const ticketId = process.argv[3]; // e.g., "FAL-2014 (current sprint chore ticket ID)"
 
-  if (!releaseBranch || !ticketId) {
+  if (!currentReleaseBranch || !ticketId) {
     console.error(
-      "❌ Usage: node mergetomasterbranch.ts <release-branch> <ticket-id>"
+      "❌ Usage: node mergetomasterbranch.ts <currentReleaseBranch> <ticket-id>"
     );
     process.exit(1);
   }
@@ -94,11 +94,11 @@
       runCommand("git checkout master", servicePath);
       runCommand("git pull origin master", servicePath);
 
-      runCommand(`git checkout ${releaseBranch}`, servicePath);
-      runCommand(`git pull origin ${releaseBranch}`, servicePath);
+      runCommand(`git checkout ${currentReleaseBranch}`, servicePath);
+      runCommand(`git pull origin ${currentReleaseBranch}`, servicePath);
 
       runCommand(`git checkout -b ${choreBranch}`, servicePath);
-      runCommand(`git rebase ${releaseBranch}`, servicePath);
+      runCommand(`git rebase ${currentReleaseBranch}`, servicePath);
       runCommand(`git rebase master`, servicePath);
       runCommand(`git push origin ${choreBranch}`, servicePath);
       // ========================= Commands ========================= //
