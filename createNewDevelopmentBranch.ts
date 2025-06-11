@@ -1,5 +1,5 @@
-// Usage: node createNewDevelopentBranch.ts <created new release branch> <new-development-branch (next sprint)> <new version> ["mi", "ck", "gw"]
-// Example: node createNewDevelopentBranch.ts release/v1.0.0 release/v1.0.0-rc1 1.0.0-rc1 mi ck gw
+// Usage: node createNewDevelopentBranch.ts <created new release branch> <new-development-branch (next sprint)> <new version> <["mi", "ck", "gw"]>
+// Example: node createNewDevelopmentBranch.ts release/v1.0.0 release/v1.0.0 1.0.0 mi ck gw
 //
 // This script will create new development branch and new version for all microservices.
 // It creates a new branch and new version for each microservice.
@@ -74,8 +74,8 @@
 
   // Get dynamic values from command-line arguments
   const newReleaseBranch = process.argv[2]; // e.g., "release/v1.0.0"
-  const newDevelopmentBranch = process.argv[3]; // e.g., "release/v1.0.0-rc1"
-  const version = process.argv[4]; // e.g., "1.0.0-rc1"
+  const newDevelopmentBranch = process.argv[3]; // e.g., "release/v1.0.0"
+  const version = process.argv[4]; // e.g., "1.0.0"
   const brands = process.argv.slice(5); // e.g., ["mi", "ck", "gw"]
 
   if (
@@ -91,7 +91,7 @@
   }
 
   // Function to update the image in JSON files
-  function updateVersion(filePath, newVersion) {
+  function updateVersion(filePath, newVersion, brand) {
     if (!fs.existsSync(filePath)) {
       console.warn(`⚠️ File not found: ${filePath}`);
       return;
@@ -109,7 +109,7 @@
           "g"
         );
 
-        content = content.replace(imageRegex, `$1${newVersion}$2`);
+        content = content.replace(imageRegex, `$1${newVersion}-${brand}$2`);
       }
 
       fs.writeFileSync(filePath, content, "utf8");
@@ -134,14 +134,17 @@
       console.log(`🔹 Processing microservice: ${service}`);
 
       // ========================= Commands ========================= //
-      // 1️⃣ Checkout master and pull latest changes
-      runCommand(`git checkout ${newReleaseBranch}`, servicePath);
-      runCommand(`git pull origin ${newReleaseBranch}`, servicePath);
-
-      // 2️⃣ Create a new development branch
-      runCommand(`git checkout -b ${newDevelopmentBranch}`, servicePath);
-
       for (const brand of brands) {
+        // 1️⃣ Checkout master and pull latest changes
+        runCommand(`git checkout ${newReleaseBranch}`, servicePath);
+        runCommand(`git pull origin ${newReleaseBranch}`, servicePath);
+
+        // 2️⃣ Create a new development branch
+        runCommand(
+          `git checkout -b ${newDevelopmentBranch}-${brand}`,
+          servicePath
+        );
+
         // 3️⃣ Update the version inside necessary files **before** running npm version
         for (const file of filesToUpdate) {
           const filePath = path.join(
@@ -151,21 +154,23 @@
             `/task-definition/${brand}`,
             file
           );
-          console.log({ filePath });
-          updateVersion(filePath, version);
+          updateVersion(filePath, version, brand);
         }
+
+        // 4️⃣ Run npm version **after** updating the version inside files
+        runCommand(
+          `npm version ${version}-${brand} --no-git-tag-version`,
+          servicePath
+        );
+
+        // 5️⃣ Git add and commit
+        runCommand(`git add .`, servicePath);
+        runCommand(
+          `git commit -m "chore: FAL-3253 Bump version to ${version}-${brand}"`,
+          servicePath
+        );
+        // runCommand(`git push origin release/v${version}-${brand}`, servicePath);
       }
-
-      // 4️⃣ Run npm version **after** updating the version inside files
-      runCommand(`npm version ${version} --no-git-tag-version`, servicePath);
-
-      // 5️⃣ Git add and commit
-      runCommand(`git add .`, servicePath);
-      runCommand(
-        `git commit -m "chore: FAL-3253 Bump version to ${version}"`,
-        servicePath
-      );
-      // runCommand(`git push origin release/v${version}`, servicePath);
       // ========================= Commands ========================= //
 
       console.log(`✅ Created New Development Branch completed for ${service}`);

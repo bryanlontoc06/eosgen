@@ -144,7 +144,6 @@ function updateVersion(filePath, newVersion) {
           `/task-definition/${brand}`,
           file
         );
-        console.log({ filePath });
         updateVersion(filePath, version);
       }
     }
