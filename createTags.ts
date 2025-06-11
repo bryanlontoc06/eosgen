@@ -1,5 +1,5 @@
-// Usage: node createTags.ts <release-version(current)> <high level description of the changes>
-// Example: node createTags.ts 1.0.0-mb "Bump version to 1.0.0-mb"
+// Usage: node createTags.ts <release-version(current)> <branchTag> <high level description of the changes>
+// Example: node createTags.ts 1.0.0-mb master "Bump version to 1.0.0-mb"
 //
 // This script will create new tags for all microservices.
 // It creates a new tag for each microservice based on the current release version and description.
@@ -7,8 +7,8 @@
 // It helps to ensure that the tags are consistent across all microservices.
 // The script uses the current release version and description for each microservice.
 // The script runs the following Git commands for each microservice:
-// 1. git checkout master
-// 2. git pull origin master
+// 1. git checkout <branchTag>
+// 2. git pull origin <branchTag>
 // 3. git checkout -b <release-version(current)>
 // 4. git tag v1.0.0-mb -a -m "<high level description of the changes>"
 // 5. git push origin v1.0.0-mb
@@ -66,10 +66,11 @@
 
   // Get dynamic values from command-line arguments
   const currentReleaseVersion = process.argv[2]; // e.g., "1.0.0-mb"
-  const description = process.argv[3]; // e.g., "Bump version to 1.0.0-mb"
-  if (!currentReleaseVersion || !description) {
+  const branchTag = process.argv[3]; // e.g., "master"
+  const description = process.argv[4]; // e.g., "Bump version to 1.0.0-mb"
+  if (!currentReleaseVersion || !branchTag || !description) {
     console.error(
-      "❌ Usage: node createTags.ts <current-release-version> <high level description of the changes>"
+      "❌ Usage: node createTags.ts <current-release-version> <branchTag> <high level description of the changes>"
     );
     process.exit(1);
   }
@@ -90,8 +91,8 @@
 
       // ========================= Commands ========================= //
       // 1️⃣ Checkout master and pull latest changes
-      runCommand(`git checkout master`, servicePath);
-      runCommand(`git pull origin master`, servicePath);
+      runCommand(`git checkout ${branchTag}`, servicePath);
+      runCommand(`git pull origin ${branchTag}`, servicePath);
 
       // 2️⃣ Create tag for the current release branch
       runCommand(
