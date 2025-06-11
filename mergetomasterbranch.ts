@@ -22,21 +22,21 @@
 
   // List of microservices to update
   const microservices = [
-    "falcon-web-bff",
-    "falcon-app-bff",
-    "falcon-connect-svc",
-    "falcon-product-svc",
-    "falcon-store-svc",
-    "falcon-order-svc",
-    "falcon-payment-svc",
-    "falcon-discount-svc",
-    "falcon-cart-svc",
-    "falcon-notification-svc",
-    "falcon-user-svc",
-    "falcon-webhook-svc",
-    "falcon-jedi-svc",
-    "falcon-promo-svc",
-    "falcon-console-bff",
+    // "falcon-web-bff",
+    // "falcon-app-bff",
+    // "falcon-connect-svc",
+    // "falcon-product-svc",
+    // "falcon-store-svc",
+    // "falcon-order-svc",
+    // "falcon-payment-svc",
+    // "falcon-discount-svc",
+    // "falcon-cart-svc",
+    // "falcon-notification-svc",
+    // "falcon-user-svc",
+    // "falcon-webhook-svc",
+    // "falcon-jedi-svc",
+    // "falcon-promo-svc",
+    // "falcon-console-bff",
   ];
 
   function runCommand(command, cwd) {
@@ -100,6 +100,7 @@
       runCommand(`git checkout -b ${choreBranch}`, servicePath);
       runCommand(`git rebase ${releaseBranch}`, servicePath);
       runCommand(`git rebase master`, servicePath);
+      runCommand(`git push origin ${choreBranch}`, servicePath);
       // ========================= Commands ========================= //
 
       console.log(`✅ Rebase completed for ${service}`);

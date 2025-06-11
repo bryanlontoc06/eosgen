@@ -1,5 +1,5 @@
-// Usage: node createNewReleaseBranch.ts <new-release-branch (next sprint)> <new version>
-// Example: node createNewReleaseBranch.ts release/v1.0.0-rc1 1.0.0-rc1
+// Usage: node createNewReleaseBranch.ts <new-release-branch (next sprint)> <new version> ["mi", "ck", "gw"]
+// Example: node createNewReleaseBranch.ts release/v1.0.0-rc1 1.0.0-rc1 mi ck gw
 //
 // This script will create new release branch and new version for all microservices.
 // It creates a new branch and new version for each microservice.
@@ -20,21 +20,21 @@ const readline = require("readline");
 
 // List of microservices to update
 const microservices = [
-  "falcon-web-bff",
-  "falcon-app-bff",
-  "falcon-connect-svc",
-  "falcon-product-svc",
-  "falcon-store-svc",
-  "falcon-order-svc",
-  "falcon-payment-svc",
-  "falcon-discount-svc",
-  "falcon-cart-svc",
-  "falcon-notification-svc",
-  "falcon-user-svc",
-  "falcon-webhook-svc",
-  "falcon-jedi-svc",
+  // "falcon-web-bff",
+  // "falcon-app-bff",
+  // "falcon-connect-svc",
+  // "falcon-product-svc",
+  // "falcon-store-svc",
+  // "falcon-order-svc",
+  // "falcon-payment-svc",
+  // "falcon-discount-svc",
+  // "falcon-cart-svc",
+  // "falcon-notification-svc",
+  // "falcon-user-svc",
+  // "falcon-webhook-svc",
+  // "falcon-jedi-svc",
   "falcon-promo-svc",
-  "falcon-console-bff",
+  // "falcon-console-bff",
 ];
 
 // List of files to update in each microservice
@@ -74,10 +74,11 @@ function runCommand(command, cwd) {
 // Get dynamic values from command-line arguments
 const newReleaseBranch = process.argv[2]; // e.g., "release/v1.0.0-rc1"
 const version = process.argv[3]; // e.g., "1.0.0-rc1"
+const brands = process.argv.slice(4); // e.g., ["mi", "ck", "gw"]
 
-if (!newReleaseBranch || !version) {
+if (!newReleaseBranch || !version || !brands.length) {
   console.error(
-    "❌ Usage: node releasebranch.ts <new-release-branch> <version>"
+    "❌ Usage: node releasebranch.ts <new-release-branch> <version> <brands...>"
   );
   process.exit(1);
 }
@@ -133,10 +134,19 @@ function updateVersion(filePath, newVersion) {
     // 2️⃣ Create a new release branch
     runCommand(`git checkout -b ${newReleaseBranch}`, servicePath);
 
-    // 3️⃣ Update the version inside necessary files **before** running npm version
-    for (const file of filesToUpdate) {
-      const filePath = path.join(__dirname, "..", service, file);
-      updateVersion(filePath, version);
+    for (const brand of brands) {
+      // 3️⃣ Update the version inside necessary files **before** running npm version
+      for (const file of filesToUpdate) {
+        const filePath = path.join(
+          __dirname,
+          "..",
+          service,
+          `/task-definition/${brand}`,
+          file
+        );
+        console.log({ filePath });
+        updateVersion(filePath, version);
+      }
     }
 
     // 4️⃣ Run npm version **after** updating the version inside files
@@ -145,9 +155,10 @@ function updateVersion(filePath, newVersion) {
     // 5️⃣ Git add and commit
     runCommand(`git add .`, servicePath);
     runCommand(
-      `git commit -m "chore: FAL-3251 Bump version to ${version}"`,
+      `git commit -m "chore: FAL-3253 Bump version to ${version}"`,
       servicePath
     );
+    // runCommand(`git push origin release/v${version}`, servicePath);
     // ========================= Commands ========================= //
 
     console.log(`✅ Created New Release Branch completed for ${service}`);
