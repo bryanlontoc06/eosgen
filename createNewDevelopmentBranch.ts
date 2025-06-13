@@ -1,20 +1,23 @@
 // !! IMPORTANT !!
 // NOTE: THIS SCRIPT IS FOR CREATING A NEW DEVELOPMENT BRANCH AND VERSION FOR MULTIPLE MICROSERVICES FROM A RELEASE BRANCH
 
-// Usage: node createNewDevelopentBranch.ts <releaseBranch> <newVersion> <brand/s["mi", "ck", "gw"]>
+// Usage: node createNewDevelopentBranch.ts <currentReleaseBranch> <developmentBranch> <brand/s["mi", "ck", "gw"]>
 // Example: node createNewDevelopmentBranch.ts 1.0.0 1.0.0 mi ck gw
-//
-// This script will create new development branch and new version for all microservices.
-// It creates a new branch and new version for each microservice.
-// The script is useful when you need to create new development branch to master for multiple microservices.
-// It helps to avoid conflicts and ensures that the development branch is up-to-date with the latest changes in master.
-// The script uses the new development branch name and new version for each microservice.
+// Note: I made the current release branch and development branch dynamic to support a flexible approach,
+// since the current release version might differ from the development release version.
+// e.g., release/v1.0.0 (current release branch) vs. release/v1.0.0-1-mi (development branch)
+
+// This script will create new development branch from current release branch for all microservices.
+// It creates a new development branch from current release branch for each microservice.
+// The script is useful when you need to create new development branch to current release branch for multiple microservices.
+// It helps to avoid conflicts and ensures that the development branch is up-to-date with the latest changes in current release branch.
+// The script uses the new development branch name for each microservice.
 // The script runs the following Git commands for each microservice:
-// 1. git checkout release/v<releaseBranch>
-// 2. git pull origin release/v<releaseBranch>
-// 3. git checkout -b release/v<newVersion>-<brand>
-// 4. npm version <newVersion>-<brand> --no-git-tag-version
-// 5. git commit -m "chore: FAL-755 Bump version to <newVersion>-<brand>"
+// 1. git checkout release/v<currentReleaseBranch>
+// 2. git pull origin release/v<currentReleaseBranch>
+// 3. git checkout -b release/v<developmentBranch>-<brand>
+// 4. npm version <developmentBranch>-<brand> --no-git-tag-version
+// 5. git commit -m "chore: FAL-755 Bump version to <developmentBranch>-<brand>"
 
 (() => {
   const { execSync } = require("child_process");
@@ -76,19 +79,19 @@
   // }
 
   // Get dynamic values from command-line arguments
-  const releaseBranch = process.argv[2]; // e.g., "1.0.0"
-  const newVersion = process.argv[3]; // e.g., "1.0.0"
+  const currentReleaseBranch = process.argv[2]; // e.g., "1.0.0"
+  const developmentBranch = process.argv[3]; // e.g., "1.0.0"
   const brands = process.argv.slice(4); // e.g., ["mi", "ck", "gw"]
 
-  if (!releaseBranch || !newVersion || !brands.length) {
+  if (!currentReleaseBranch || !developmentBranch || !brands.length) {
     console.error(
-      "❌ Usage: node createNewDevelopentBranch.ts <releaseBranch> <newVersion> <brand/s['mi', ck', 'gw']>"
+      "❌ Usage: node createNewDevelopentBranch.ts <currentReleaseBranch> <developmentBranch> <brand/s['mi', ck', 'gw']>"
     );
     process.exit(1);
   }
 
   // Function to update the image in JSON files
-  function updateVersion(filePath, newVersion, brand) {
+  function updateVersion(filePath, developmentBranch, brand) {
     if (!fs.existsSync(filePath)) {
       console.warn(`⚠️ File not found: ${filePath}`);
       return;
@@ -106,7 +109,10 @@
           "g"
         );
 
-        content = content.replace(imageRegex, `$1${newVersion}-${brand}$2`);
+        content = content.replace(
+          imageRegex,
+          `$1${developmentBranch}-${brand}$2`
+        );
       }
 
       fs.writeFileSync(filePath, content, "utf8");
@@ -133,12 +139,18 @@
       // ========================= Commands ========================= //
       for (const brand of brands) {
         // 1️⃣ Checkout master and pull latest changes
-        runCommand(`git checkout release/v${releaseBranch}`, servicePath);
-        runCommand(`git pull origin release/v${releaseBranch}`, servicePath);
+        runCommand(
+          `git checkout release/v${currentReleaseBranch}`,
+          servicePath
+        );
+        runCommand(
+          `git pull origin release/v${currentReleaseBranch}`,
+          servicePath
+        );
 
         // 2️⃣ Create a new development branch
         runCommand(
-          `git checkout -b release/v${newVersion}-${brand}`,
+          `git checkout -b release/v${developmentBranch}-${brand}`,
           servicePath
         );
 
@@ -151,22 +163,22 @@
             `/task-definition/${brand}`,
             file
           );
-          updateVersion(filePath, newVersion, brand);
+          updateVersion(filePath, developmentBranch, brand);
         }
 
         // 4️⃣ Run npm version **after** updating the version inside files
         runCommand(
-          `npm version ${newVersion}-${brand} --no-git-tag-version`,
+          `npm version ${developmentBranch}-${brand} --no-git-tag-version`,
           servicePath
         );
 
         // 5️⃣ Git add and commit
         runCommand(`git add .`, servicePath);
         runCommand(
-          `git commit -m "chore: FAL-3253 Bump version to ${newVersion}-${brand}"`,
+          `git commit -m "chore: FAL-3253 Bump version to ${developmentBranch}-${brand}"`,
           servicePath
         );
-        // runCommand(`git push origin release/v${newVersion}-${brand}`, servicePath);
+        // runCommand(`git push origin release/v${developmentBranch}-${brand}`, servicePath);
       }
       // ========================= Commands ========================= //
 

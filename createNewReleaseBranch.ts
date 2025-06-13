@@ -14,7 +14,7 @@
 // 2. git pull origin master
 // 3. git checkout -b <newVersion>
 // 4. npm version <newVersion> --no-git-tag-version
-// 5. git commit -m "chore: FAL-755 Bump version to <version>"
+// 5. git commit -m "chore: FAL-755 Bump version to <newVersion>"
 
 const { execSync } = require("child_process");
 const fs = require("fs");

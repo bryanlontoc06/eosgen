@@ -1,19 +1,20 @@
-// Usage: node mergetomasterbranch.ts <currentReleaseBranch> <ticket-id(current sprint chore ticket ID)>
-// Example: node mergetomasterbranch.ts release/v0.0.0 FAL-2014
+// Usage: node mergetoparentbranch.ts <currentReleaseBranch> <parentBranch> <ticket-id(current sprint chore ticket ID)>
+// Example: node mergetoparentbranch.ts release/v0.0.0 master FAL-2014
 //
-// This script rebases the release branch to master for all microservices.
+// This script rebases the 'current' release branch to parent branch for all microservices.
 // It creates a new branch for each microservice with the rebase changes.
-// The script is useful when you need to merge a release branch to master for multiple microservices.
-// It helps to avoid conflicts and ensures that the release branch is up-to-date with the latest changes in master.
+// The script is useful when you need to merge a 'current' release branch to parent branch for multiple microservices.
+// It helps to avoid conflicts and ensures that the 'current' release branch is up-to-date with the latest changes in parent branch.
 // The script uses the release branch name and ticket ID to create a new branch for each microservice.
 // The new branch name format is "chore/<ticket-id>-merge-to-master".
 // The script runs the following Git commands for each microservice:
-// 1. git checkout master
-// 2. git pull origin master
+// 1. git checkout <parentBranch>
+// 2. git pull origin <parentBranch>
 // 3. git checkout <currentReleaseBranch>
 // 4. git pull origin <currentReleaseBranch>
 // 5. git checkout -b <chore-branch>
-// 6. git rebase master
+// 6. git rebase <parentBranch>
+// 7. git push origin <choreBranch>
 (() => {
   const { execSync } = require("child_process");
   const fs = require("fs");
@@ -66,11 +67,12 @@
 
   // Get dynamic values from command-line arguments
   const currentReleaseBranch = process.argv[2]; // e.g., "release/v0.22.0 (current Branch)"
-  const ticketId = process.argv[3]; // e.g., "FAL-2014 (current sprint chore ticket ID)"
+  const parentBranch = process.argv[3]; // e.g., "master"
+  const ticketId = process.argv[4]; // e.g., "FAL-2014 (current sprint chore ticket ID)"
 
-  if (!currentReleaseBranch || !ticketId) {
+  if (!currentReleaseBranch || !parentBranch || !ticketId) {
     console.error(
-      "❌ Usage: node mergetomasterbranch.ts <currentReleaseBranch> <ticket-id>"
+      "❌ Usage: node mergetoparentbranch.ts <currentReleaseBranch> <parentBranch> <ticket-id>"
     );
     process.exit(1);
   }
@@ -91,15 +93,15 @@
       console.log(`🔹 Processing microservice: ${service}`);
 
       // ========================= Commands ========================= //
-      runCommand("git checkout master", servicePath);
-      runCommand("git pull origin master", servicePath);
+      runCommand(`git checkout ${parentBranch}`, servicePath);
+      runCommand(`git pull origin ${parentBranch}`, servicePath);
 
       runCommand(`git checkout ${currentReleaseBranch}`, servicePath);
       runCommand(`git pull origin ${currentReleaseBranch}`, servicePath);
 
       runCommand(`git checkout -b ${choreBranch}`, servicePath);
       runCommand(`git rebase ${currentReleaseBranch}`, servicePath);
-      runCommand(`git rebase master`, servicePath);
+      runCommand(`git rebase ${parentBranch}`, servicePath);
       runCommand(`git push origin ${choreBranch}`, servicePath);
       // ========================= Commands ========================= //
 
